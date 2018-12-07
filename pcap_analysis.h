@@ -34,4 +34,10 @@ void displayPacketHeaderInfo(struct PacketHeader* pPacket);
 
 //输出ip头部信息
 void displayIPHeaderInfo(struct IPHeader* pIPHeader);
+
+//以太网数据帧头占据Packet前14个字节ss
+void displayEthernetDataFrame(struct MACHeader *pMacHeader);
+
+//返回ip头部的协议名
+char* protocol_analysis(_1Byte protocol);
 #endif

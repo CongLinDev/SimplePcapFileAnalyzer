@@ -25,6 +25,7 @@ typedef unsigned int  _4Byte;
 
 #define PCAP_FILE_HEADER_SIZE	24		//24个字节
 #define PACKET_HEADER_SIZE		16		//16个字节
+#define MAC_HEADER_SIZE			14		//14个字节
 #define IP_HEADER_SIZE			20		//20个字节
 
 
@@ -113,7 +114,7 @@ struct IPHeader
 	union//共一个字节
 	{
 	_1Byte version;//版本号
-	_1Byte headerLength;//首部长度
+	_1Byte headerLength;//包头长度,指明IPv4协议包头长度的字节数包含多少个32位
 	};
 	_1Byte serviceType;//区分服务
 	_2Byte totalLength;//总长度
@@ -121,7 +122,7 @@ struct IPHeader
 	_2Byte identification;//标识
 	union
 	{
-		_2Byte flags;//标志
+		_2Byte flags;//标志,当封包在传输过程中进行最佳组合时使用的3个bit的识别记号
 		_2Byte fragmentOffset;//片偏移
 	};
 	/*----------第三行-------------------*/
@@ -132,6 +133,13 @@ struct IPHeader
 	_4Byte sourceAddress;//源地址
 	/*----------第五行-------------------*/
 	_4Byte destinationAddress;//目标地址
+};
+
+//MAC帧信息
+struct MACHeader{
+	_1Byte destinationAddress[6];
+	_1Byte sourceAddress[6];
+	_2Byte type;
 };
 
 #endif
