@@ -8,15 +8,10 @@
 bool openPcapFile(char* path, FILE** file_pointer, int *file_length){
 	*file_pointer = fopen(path, "rb+");
 	
-	if(*file_pointer == NULL)
-	{
-		//int errNum = errno;
-		//printf("open fail errno = %d reason = %s \n", errNum, strerrno(errNum));
-		return false;
-	}
+	if(*file_pointer == NULL) {return false;}
 	
 	fseek(*file_pointer, 0, SEEK_END);
-	*file_length = ftell(*file_pointer);//??????
+	*file_length = ftell(*file_pointer);
 
 	fseek(*file_pointer, 0, SEEK_SET);
 
@@ -24,7 +19,7 @@ bool openPcapFile(char* path, FILE** file_pointer, int *file_length){
 }
 
 void getPcapFileHeader(struct PcapFileHeader* pcapFileHeader, FILE** file_pointer){
-	int nowPos = ftell(*file_pointer);//????????
+	int nowPos = ftell(*file_pointer);
 	
 	fseek(*file_pointer, 0, SEEK_SET);
 	fread((void *)pcapFileHeader, PCAP_FILE_HEADER_SIZE, 1, *file_pointer);
@@ -93,7 +88,9 @@ void displayIPHeaderInfo(struct IPHeader* pIPHeader){
 
 	printf("IP封包标识:\t%d\n", ntohs(pIPHeader->identification));
 	_2Byte flags = pIPHeader->flags;
-	printf("IP标志:\t%d\n", flags >> 13);
+	flags >> 13;
+	_1Byte flags_mf = flags & 0x1; _1Byte flags_df = flags & 0x2;
+	printf("IP标志:\t%d\tMF:%d\tDF:%d\n", flags,flags_mf,flags_df);
 	_2Byte fragmentOffset = pIPHeader->fragmentOffset & 0x1fff;
 	printf("IP片偏移:\t%d\n", fragmentOffset);
 
@@ -141,6 +138,7 @@ char* protocol_analysis(_1Byte protocol){
 		case 5:   return "ST";
 		case 6:   return "TCP";
 		case 8:   return "EGP";
+		case 9:   return "IGP";
 		case 12:  return "PUP";
 		case 17:  return "UDP";
 		case 20:  return "HMP";
@@ -150,12 +148,14 @@ char* protocol_analysis(_1Byte protocol){
 		case 36:  return "XTP";
 		case 37:  return "DDP";
 		case 39:  return "IDPR-CMTP";
+		case 41:  return "IPv6";
+		case 50:  return "ESP";
 		case 73:  return "RSPF";
 		case 81:  return "VMTP";
 		case 88:  return "EIGRP";
         case 89:  return "OSPFIGP";
 		case 94:  return "IPIP";
 		case 98:  return "ENCAP";
-        default:  return "!UNKNOWN";
+        default:  return "!UNKNOWN!";
     }
 }
