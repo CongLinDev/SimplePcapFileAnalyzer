@@ -6,6 +6,8 @@
 
 #include "define.h"
 
+//处理过程
+void processFile(char* pcapFileName, char* logFileName);
 
 //打开文件
 bool openPcapFile(char* path, FILE** file_pointer, int* file_length);
@@ -33,11 +35,14 @@ void displayPcapFileHeaderInfo(struct PcapFileHeader* pcap_file_header, char* fi
 void displayPacketHeaderInfo(struct PacketHeader* pPacket);
 
 //输出ip头部信息
-void displayIPHeaderInfo(struct IPHeader* pIPHeader);
+_1Byte displayIPHeaderInfo(struct IPHeader* pIPHeader);
 
 //以太网数据帧头占据Packet前14个字节ss
 void displayEthernetDataFrame(struct MACHeader *pMacHeader);
 
 //返回ip头部的协议名
 char* protocol_analysis(_1Byte protocol);
+
+//获得ip数据部分
+void displayIPPacketInfo(_1Byte protocol, _1Byte* pBuffer);
 #endif

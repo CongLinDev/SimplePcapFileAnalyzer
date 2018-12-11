@@ -5,6 +5,37 @@
 #include <time.h>
 #include <arpa/inet.h>
 
+void processFile(char* pcapFileName, char* logFileName){
+	FILE* file_pointer = NULL;
+	int  file_length = 0;
+
+	if (!openPcapFile(pcapFileName, &file_pointer, &file_length))
+	{
+		printf("ERROR: open file failed.");
+		exit(-2);
+	}
+
+	/*pcap文件头部信息*/
+	struct PcapFileHeader pcap_file_header;
+	getPcapFileHeader(&pcap_file_header, &file_pointer);
+	displayPcapFileHeaderInfo(&pcap_file_header, pcapFileName);
+
+	/*packet头部信息*/
+	struct PacketHeader packet_header;
+
+	//将指针移动到第一个packet开始处
+	if(!moveToFirstPacket(&file_pointer)){
+		printf("ERROR: move the file pointer failed.");
+	}
+
+	while(!isEof(&file_pointer, file_length))
+	{
+		getCurrentPacketAndMoveNext(&packet_header, &file_pointer);
+	}
+
+	fclose(file_pointer);
+}
+
 bool openPcapFile(char* path, FILE** file_pointer, int *file_length){
 	*file_pointer = fopen(path, "rb+");
 	
@@ -41,7 +72,8 @@ int getCurrentPacketAndMoveNext(struct PacketHeader* pPacket, FILE** file_pointe
 	struct IPHeader iPHeader;
 	if(fread((void*)pBuffer, sizeof(_1Byte), pPacket->capLen, *file_pointer) == pPacket->capLen){
 		getIPData(&iPHeader, pBuffer);
-		displayIPHeaderInfo(&iPHeader);
+		_1Byte protocol = displayIPHeaderInfo(&iPHeader);
+		displayIPPacketInfo(protocol, pBuffer);
 	}
 	free(pBuffer);
 	printf("***********************************************************\n");
@@ -79,13 +111,15 @@ void displayPacketHeaderInfo(struct PacketHeader* pPacket){
 	printf("数据包实际长度(不含头部):\t%d Bytes\n", pPacket->len);
 }
 
-void displayIPHeaderInfo(struct IPHeader* pIPHeader){
+_1Byte displayIPHeaderInfo(struct IPHeader* pIPHeader){
+	/*----------第一行-------------------*/
 	_1Byte version = pIPHeader->version;
 	printf("IP数据包版本号:\t%d\n", version >> 4);
 	_1Byte headerLength = pIPHeader->headerLength & 0xf;
 	printf("IP数据包头长度:\t%d Bytes\n", headerLength << 2);
+	printf("IP数据包区分服务:\t%d Bytes\n",pIPHeader->serviceType);
 	printf("IP数据包总长:\t%d Bytes\n", ntohs(pIPHeader->totalLength));
-
+	/*----------第二行-------------------*/
 	printf("IP封包标识:\t%d\n", ntohs(pIPHeader->identification));
 	_2Byte flags = pIPHeader->flags;
 	flags >> 13;
@@ -93,16 +127,19 @@ void displayIPHeaderInfo(struct IPHeader* pIPHeader){
 	printf("IP标志:\t%d\tMF:%d\tDF:%d\n", flags,flags_mf,flags_df);
 	_2Byte fragmentOffset = pIPHeader->fragmentOffset & 0x1fff;
 	printf("IP片偏移:\t%d\n", fragmentOffset);
-
-	//printf(ntohs(pIPHeader->headerChecksum);
-	printf("IP数据包TTL:\t%d ms\n", pIPHeader->timeToLive);
+	/*----------第三行-------------------*/
+	printf("IP数据包TTL:\t%d\n", pIPHeader->timeToLive);
 	printf("协议:\t%s\n", protocol_analysis(pIPHeader->protocol));
+	printf("IP数据包头部检验和:\t%d\n", ntohs(pIPHeader->headerChecksum));
 	
 	struct in_addr sourceAddress, destinationAddress;
 	memcpy(&sourceAddress, &(pIPHeader->sourceAddress), 4);
 	memcpy(&destinationAddress, &(pIPHeader->destinationAddress), 4);
+	/*----------第四行-------------------*/
 	printf("源地址:\t%s\n",inet_ntoa(sourceAddress));
+	/*----------第五行-------------------*/
 	printf("目标地址:\t%s\n",inet_ntoa(destinationAddress));
+	return pIPHeader->protocol;
 }
 
 //以太网数据帧头占据Packet前14个字节
@@ -158,4 +195,63 @@ char* protocol_analysis(_1Byte protocol){
 		case 98:  return "ENCAP";
         default:  return "!UNKNOWN!";
     }
+}
+
+void displayIPPacketInfo(_1Byte protocol, _1Byte* pBuffer){
+	switch(protocol){
+		case 1://ICMP
+			printf("-----------------------ICMP-----------------------\n");
+			struct ICMPHeader icmpHeader;
+			memcpy((void*)&icmpHeader, pBuffer + MAC_HEADER_SIZE + IP_HEADER_SIZE, ICMP_HEADER_SIZE);
+			printf("ICMP类型:\t%d\n", icmpHeader.type);
+			printf("ICMP代码:\t%d\n", icmpHeader.code);
+			printf("ICMP首部检验和:\t%d\n", icmpHeader.headerChecksum);
+			printf("ICMP标识:\t%d\n", icmpHeader.identification);
+			printf("ICMP序列号:\t%d\n", icmpHeader.serial);
+			break;
+		case 2://IGMP
+			break;
+		case 6://TCP
+			printf("-----------------------TCP-----------------------\n");
+			struct TCPHeader tcpHeader;
+			memcpy((void*)&tcpHeader, pBuffer + MAC_HEADER_SIZE + IP_HEADER_SIZE, TCP_HEADER_SIZE);
+			printf("TCP源端口:\t%d\n", ntohs(tcpHeader.sourcePort));
+			printf("TCP目的端口:\t%d\n", ntohs(tcpHeader.destinationPort));
+			printf("TCP序号:\t%d\n", ntohs(tcpHeader.serial));
+			printf("TCP确认号:\t%d\n", ntohs(tcpHeader.acknowledgementNumber));
+			for(int i = 12; i < TCP_HEADER_SIZE;i++){
+				printf("%x\n",pBuffer[MAC_HEADER_SIZE + IP_HEADER_SIZE + i]);
+			}
+			tcpHeader.dataOffset = ntohs(tcpHeader.dataOffset);
+			_2Byte dataOffset = tcpHeader.dataOffset;
+			printf("TCP数据偏移:\t%d Bytes\n", (dataOffset>>12) * 4);
+			_2Byte urg = tcpHeader.urg;//紧急
+			printf("TCP urg位:\t%d\n", (urg & 32) >> 5);
+			_2Byte ack = tcpHeader.ack;//确认
+			printf("TCP ack位:\t%d\n", (ack & 16) >> 4);
+			_2Byte psh = tcpHeader.psh;//推送
+			printf("TCP psh位:\t%d\n", (psh & 8) >> 3);
+			_2Byte rst = tcpHeader.rst;//复位
+			printf("TCP rst位:\t%d\n", (rst & 4) >> 2);
+			_2Byte syn = tcpHeader.syn;//同步
+			printf("TCP syn位:\t%d\n", (syn & 2) >> 1);
+			_2Byte fin = tcpHeader.fin;//终止
+			printf("TCP fin位:\t%d\n", (fin & 1));
+			printf("TCP窗口:\t%d\n", ntohs(tcpHeader.window));
+			printf("TCP检验和:\t%x\n", ntohs(tcpHeader.checksum));
+			printf("TCP紧急指针:\t%d\n", tcpHeader.urgentpointer);
+			break;
+		case 17://UDP
+			printf("-----------------------UDP-----------------------\n");
+			struct UDPHeader udpHeader;
+			memcpy((void*)&udpHeader, pBuffer + MAC_HEADER_SIZE + IP_HEADER_SIZE, UDP_HEADER_SIZE);
+			
+			printf("UDP源端口:\t%d\n", ntohs(udpHeader.sourcePort));
+			printf("UDP目的端口:\t%d\n",ntohs(udpHeader.destinationPort));
+			printf("UDP长度:\t%d\n", ntohs(udpHeader.length));
+			printf("UDP检验和:\t%x\n", ntohs(udpHeader.checksum));
+			break;
+		default:
+			break;
+	}
 }

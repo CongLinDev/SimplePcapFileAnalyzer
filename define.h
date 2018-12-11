@@ -27,7 +27,9 @@ typedef unsigned int  _4Byte;
 #define PACKET_HEADER_SIZE		16		//16个字节
 #define MAC_HEADER_SIZE			14		//14个字节
 #define IP_HEADER_SIZE			20		//20个字节
-
+#define ICMP_HEADER_SIZE		8		//8个字节
+#define TCP_HEADER_SIZE			20		//20个字节
+#define UDP_HEADER_SIZE			8		//8个字节
 
 /*
 			            	PCAP File Header
@@ -140,6 +142,80 @@ struct MACHeader{
 	_1Byte destinationAddress[6];
 	_1Byte sourceAddress[6];
 	_2Byte type;
+};
+
+/*
+							  ICMPHeader
+
+	0                   1                   2                   3
+	0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |     type      |      code     |         Header Checksum       |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |         Identification        |              serial           |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+*/
+struct ICMPHeader  
+{  
+    _1Byte type;   //类型  
+    _1Byte code;   //代码  
+    _2Byte headerChecksum;//首部检验和
+
+	_2Byte identification;//标识
+	_2Byte serial;//序列号
+
+};
+
+
+/*
+							  TCP Header
+
+	0                   1                   2                   3
+	0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |           Source port         |        Destination port       |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                              Serial                           |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                     Acknowledgement Number                    |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |DataOffset|Reserve|u|a|p|r|s|f|             Window             |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |             Checksum         |         Urgent Pointer         |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Options                    |    Padding    |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+*/
+struct TCPHeader{
+	_2Byte sourcePort;//源端口
+	_2Byte destinationPort;//目的端口
+
+	_4Byte serial;//序号
+
+	_4Byte acknowledgementNumber;//确认号
+
+	union{//共2个字节
+		_2Byte dataOffset;//数据偏移
+		_2Byte reserve;//保留
+		_2Byte urg;//紧急
+		_2Byte ack;//确认
+		_2Byte psh;//推送
+		_2Byte rst;//复位
+		_2Byte syn;//同步
+		_2Byte fin;//终止
+	};
+	_2Byte window;//窗口
+
+	_2Byte checksum;//检验和
+	_2Byte urgentpointer;//紧急指针
+};
+
+struct UDPHeader{
+	_2Byte sourcePort;//源端口
+	_2Byte destinationPort;//目的端口
+	_2Byte length;//长度
+	_2Byte checksum;//检验和
 };
 
 #endif
