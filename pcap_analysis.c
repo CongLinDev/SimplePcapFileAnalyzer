@@ -107,38 +107,38 @@ void displayPacketHeaderInfo(struct PacketHeader* pPacket){
 	localtime_r(&time_seconds, &packet_time);  
     printf("%04d/%02d/%02d %02d:%02d:%02d\n", packet_time.tm_year + 1900, packet_time.tm_mon + 1,
         packet_time.tm_mday, packet_time.tm_hour, packet_time.tm_min, packet_time.tm_sec);
-	printf("数据包抓包长度(不含头部):\t%d Bytes\n", pPacket->capLen);
-	printf("数据包实际长度(不含头部):\t%d Bytes\n", pPacket->len);
+	printf("数据包抓包长度(不含头部):\t\t%d Bytes\n", pPacket->capLen);
+	printf("数据包实际长度(不含头部):\t\t%d Bytes\n", pPacket->len);
 }
 
 _1Byte displayIPHeaderInfo(struct IPHeader* pIPHeader){
 	/*----------第一行-------------------*/
 	_1Byte version = pIPHeader->version;
-	printf("IP数据包版本号:\t%d\n", version >> 4);
+	printf("IP数据包版本号:\t\t\t\t%d\n", version >> 4);
 	_1Byte headerLength = pIPHeader->headerLength & 0xf;
-	printf("IP数据包头长度:\t%d Bytes\n", headerLength << 2);
-	printf("IP数据包区分服务:\t%d Bytes\n",pIPHeader->serviceType);
-	printf("IP数据包总长:\t%d Bytes\n", ntohs(pIPHeader->totalLength));
+	printf("IP数据包头长度:\t\t\t\t%d Bytes\n", headerLength << 2);
+	printf("IP数据包区分服务:\t\t\t%d Bytes\n",pIPHeader->serviceType);
+	printf("IP数据包总长:\t\t\t\t%d Bytes\n", ntohs(pIPHeader->totalLength));
 	/*----------第二行-------------------*/
-	printf("IP封包标识:\t%d\n", ntohs(pIPHeader->identification));
+	printf("IP封包标识:\t\t\t\t%d\n", ntohs(pIPHeader->identification));
 	_2Byte flags = pIPHeader->flags;
 	flags >> 13;
 	_1Byte flags_mf = flags & 0x1; _1Byte flags_df = flags & 0x2;
-	printf("IP标志:\t%d\tMF:%d\tDF:%d\n", flags,flags_mf,flags_df);
+	printf("IP标志:\t\t\t%d\tMF:%d\tDF:%d\n", flags,flags_mf,flags_df);
 	_2Byte fragmentOffset = pIPHeader->fragmentOffset & 0x1fff;
-	printf("IP片偏移:\t%d\n", fragmentOffset);
+	printf("IP片偏移:\t\t\t\t%d\n", fragmentOffset);
 	/*----------第三行-------------------*/
-	printf("IP数据包TTL:\t%d\n", pIPHeader->timeToLive);
-	printf("协议:\t%s\n", protocol_analysis(pIPHeader->protocol));
-	printf("IP数据包头部检验和:\t%d\n", ntohs(pIPHeader->headerChecksum));
+	printf("IP数据包TTL:\t\t\t\t%d\n", pIPHeader->timeToLive);
+	printf("协议:\t\t\t\t\t%s\n", protocol_analysis(pIPHeader->protocol));
+	printf("IP数据包头部检验和:\t\t\t%d\n", ntohs(pIPHeader->headerChecksum));
 	
 	struct in_addr sourceAddress, destinationAddress;
 	memcpy(&sourceAddress, &(pIPHeader->sourceAddress), 4);
 	memcpy(&destinationAddress, &(pIPHeader->destinationAddress), 4);
 	/*----------第四行-------------------*/
-	printf("源地址:\t%s\n",inet_ntoa(sourceAddress));
+	printf("源地址:\t\t\t\t\t%s\n",inet_ntoa(sourceAddress));
 	/*----------第五行-------------------*/
-	printf("目标地址:\t%s\n",inet_ntoa(destinationAddress));
+	printf("目标地址:\t\t\t\t%s\n",inet_ntoa(destinationAddress));
 	return pIPHeader->protocol;
 }
 
@@ -152,7 +152,7 @@ void displayEthernetDataFrame(struct MACHeader *pMacHeader){
 					pMacHeader->sourceAddress[3],
 					pMacHeader->sourceAddress[4],
 					pMacHeader->sourceAddress[5]);
-	printf("MAC源地址:\t%s\n", buffer);
+	printf("MAC源地址:\t\t\t\t%s\n", buffer);
 	sprintf(buffer, "%02X:%02X:%02X:%02X:%02X:%02X",
 					pMacHeader->destinationAddress[0],
 					pMacHeader->destinationAddress[1],
@@ -160,8 +160,8 @@ void displayEthernetDataFrame(struct MACHeader *pMacHeader){
 					pMacHeader->destinationAddress[3],
 					pMacHeader->destinationAddress[4],
 					pMacHeader->destinationAddress[5]);
-	printf("MAC目标地址:\t%s\n",buffer);
-	printf("MAC-Type:\t%x\n",pMacHeader->type);
+	printf("MAC目标地址:\t\t\t\t%s\n",buffer);
+	printf("MAC-Type:\t\t\t\t%x\n",pMacHeader->type);
 }
 
 //返回ip头部的协议名
