@@ -59,25 +59,23 @@ struct PcapFileHeader
 	_4Byte	sigFlags;			//4Byte：时间戳的精度
 	_4Byte	snapLen;			//4Byte：最大的存储长度
 	_4Byte	linkType;			//4Byte：链路类型
-	// 常用链路类型
-	// 	0            BSD loopback devices, except for later OpenBSD
-	// 	1            Ethernet, and Linux loopback devices
-	// 	6            802.5 Token Ring
-	// 	7            ARCnet
-	// 	8            SLIP
-	// 	9            PPP
-	// 	10           FDDI
-	// 	100          LLC / SNAP - encapsulated ATM
-	// 	101          "raw IP", with no link
-	// 	102          BSD / OS SLIP
-	// 	103          BSD / OS PPP
-	// 	104          Cisco HDLC
-	// 	105          802.11
-	// 	108          later OpenBSD loopback devices(with the AF_value in network byte order)
-	// 	113          special Linux "cooked" capture
-	// 	114          LocalTalk
 };
 
+/*
+			            	Packet Header
+
+	0                   1                   2                   3
+	0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |            			    Seconds      		               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |      					 Microseconds  						   |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                  	       CapLen		                       |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    		  Len			                   |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+*/
 
 struct PacketHeader
 {
