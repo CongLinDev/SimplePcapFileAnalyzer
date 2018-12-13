@@ -117,7 +117,7 @@ _1Byte displayIPHeaderInfo(struct IPHeader* pIPHeader){
 	printf("IP数据包版本号:\t\t\t\t%d\n", version >> 4);
 	_1Byte headerLength = pIPHeader->headerLength & 0xf;
 	printf("IP数据包头长度:\t\t\t\t%d Bytes\n", headerLength << 2);
-	printf("IP数据包区分服务:\t\t\t%d Bytes\n",pIPHeader->serviceType);
+	printf("IP数据包区分服务:\t\t\t%d\n",pIPHeader->serviceType);
 	printf("IP数据包总长:\t\t\t\t%d Bytes\n", ntohs(pIPHeader->totalLength));
 	/*----------第二行-------------------*/
 	printf("IP封包标识:\t\t\t\t%d\n", ntohs(pIPHeader->identification));
@@ -130,7 +130,7 @@ _1Byte displayIPHeaderInfo(struct IPHeader* pIPHeader){
 	/*----------第三行-------------------*/
 	printf("IP数据包TTL:\t\t\t\t%d\n", pIPHeader->timeToLive);
 	printf("协议:\t\t\t\t\t%s\n", protocol_analysis(pIPHeader->protocol));
-	printf("IP数据包头部检验和:\t\t\t%d\n", ntohs(pIPHeader->headerChecksum));
+	printf("IP数据包头部检验和:\t\t\t%x\n", ntohs(pIPHeader->headerChecksum));
 	
 	struct in_addr sourceAddress, destinationAddress;
 	memcpy(&sourceAddress, &(pIPHeader->sourceAddress), 4);

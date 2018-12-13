@@ -14,7 +14,7 @@ void packet_handler(u_char *user, const struct pcap_pkthdr *pkt_header, const u_
     printf("Get a packet with length of [%d]\n", pkt_header->len);// 打印抓到的包的长度
 }
 
-void get_packet(){
+void get_packet(int argc,char *argv[]){
     pcap_t *handle = NULL;                 // 会话句柄 
     char errbuf[PCAP_ERRBUF_SIZE]; // 存储错误信息的字符串
     bpf_u_int32 mask = 0;               //所在网络的掩码 
@@ -53,6 +53,6 @@ void get_packet(){
 
 int main(int argc,char *argv[])
 {
-    get_packet();
+    get_packet(argc, argv);
     return 0;
 }
